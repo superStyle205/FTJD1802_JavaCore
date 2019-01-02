@@ -1,14 +1,15 @@
 package model.dao;
 
-import java.sql.ResultSet;
+import java.util.List;
+import model.bean.TableFood;
 
 public interface ITableFoodDao {
 	
-	ResultSet getAllTableFood();
+	List<TableFood> getAllTableFood();
 	
-	boolean insertTableFood(int idTableFood, int tableFoodName, String tableStatus);
+	boolean insertTableFood(TableFood tableFood);
 	
-	boolean updateTableFood(int idTableFood, int tableFoodName, String tableStatus);
+	boolean updateTableFood(TableFood tableFood);
 	
-	boolean  deleteTableFood(int idTableFood);
+	boolean  deleteTableFood(TableFood tableFood);
 }

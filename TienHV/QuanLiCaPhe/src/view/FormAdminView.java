@@ -1,6 +1,5 @@
 package view;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -9,33 +8,29 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Vector;
-
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-
 import com.toedter.calendar.JDateChooser;
-
-import common.database.ConnectionUntil;
+import model.bean.Employees;
+import model.bean.Food;
+import model.bean.FoodCategory;
+import model.bean.TableFood;
+import model.bean.User;
+import model.dao.EmployeesDao;
 import model.dao.FoodCategoryDao;
 import model.dao.FoodDao;
 import model.dao.TableFoodDao;
 import model.dao.UserDao;
-import testing.KetNoiCSDL;
+
 
 public class FormAdminView extends JFrame implements IFormAdminView, ActionListener, MouseListener {
 	//All
@@ -49,10 +44,10 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 	private JButton btnAddFood;
 	private JButton btnUpdateFood;
 	private JButton btnDeleteFood;
-	private JButton btnViewFood;
+	private JButton btnCleanFood;
 	private JTable tableFood;
 	private JButton btnSearchFood;
-	private JTextField food;
+	private JTextField searchFood;
 	private JLabel lblIdFood;
 	private JTextField idFood;
 	private JLabel lblFoodName;
@@ -66,7 +61,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 	private JButton btnAddFoodCategory;
 	private JButton btnUpdateFoodCategory;
 	private JButton btnDeleteFoodCategory;
-	private JButton btnViewFoodCategory;
+	private JButton btnCleanFoodCategory;
 	private JTable tableFoodCategory;
 	private JLabel lblIdFoodCategory;
 	private JLabel lblFoodCategoryName;
@@ -77,7 +72,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 	private JButton btnAddTable;
 	private JButton btnUpdateTable;
 	private JButton btnDeleteTable;
-	private JButton btnViewTable;
+	private JButton btnCleanTable;
 	private JTable table;
 	private JLabel lblIdTableFood;
 	private JTextField idTableFood;
@@ -90,19 +85,40 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 	private JButton btnAddUser;
 	private JButton btnUpdateUser;
 	private JButton btnDeleteUser;
-	private JButton btnViewUser;
+	private JButton btnCleanUser;
 	private JTable tableUser;
 	private JLabel lblUsername;
 	private JTextField username;
-	private JLabel lbltype;
+	private JLabel lblPassword;
+	private JTextField password;
+	private JLabel lblType;
 	private JTextField type;
-	private JButton btnUpdatePassword;
 	
+	//User Area (Khu vực thông tin nhân viên)
+	private JButton btnAddEmployees;
+	private JButton btnUpdateEmployees;
+	private JButton btnDeleteEmployees;
+	private JButton btnCleanEmployees;
+	private JTable tableEmployees;
+	private JLabel lblIdEmployees;
+	private JTextField idEmployees;
+	private JLabel lblUsername_employees;
+	private JTextField username_employees;
+	private JLabel lblFullName;
+	private JTextField fullName;
+	private JLabel lblAge;
+	private JTextField age;
+	private JLabel lblAddress;
+	private JTextField address;
+	private JLabel lblPhoneNumber;
+	private JTextField phoneNumber;
+	private JLabel lblHomeTown;
+	private JTextField homeTown;
+	private JLabel lblIdentityCard;
+	private JTextField identityCard;
+
 	//SQL
-	private ResultSet rs;
-	private Statement st;
 	private DefaultTableModel model;
-	private Connection conn;
 	
 	@Override
 	public void display() {
@@ -138,12 +154,14 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		JSplitPane foodCategory = managerFoodCategoryArea();
 		JSplitPane tableFood = managerTableFoodArea();
 		JSplitPane user = managerUserArea();
+		JSplitPane employees = managerEmployeesArea();
 		
 		myTabled.addTab("Quản lí doanh thu", revenue);
 		myTabled.addTab("Quản lí sản phẩm", food);
 		myTabled.addTab("Quản lí loại sản phẩm", foodCategory);
 		myTabled.addTab("Quản lí bàn", tableFood);
 		myTabled.addTab("Quản lí tài khoản", user);
+		myTabled.addTab("Quản lí thông tin người dùng", employees);
 		
 	
 		return myTabled;
@@ -194,9 +212,9 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		btnDeleteFood.addActionListener(this);
 		btnDeleteFood.setPreferredSize(new Dimension(100, 50));
 		
-		btnViewFood = new JButton("Xem");
-		btnViewFood.addActionListener(this);
-		btnViewFood.setPreferredSize(new Dimension(100, 50));
+		btnCleanFood = new JButton("Clean");
+		btnCleanFood.addActionListener(this);
+		btnCleanFood.setPreferredSize(new Dimension(100, 50));
 		
 		tableFood = new JTable(model);
 		tableFood.addMouseListener(this);
@@ -210,7 +228,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		managerButton.add(btnAddFood);
 		managerButton.add(btnUpdateFood);
 		managerButton.add(btnDeleteFood);
-		managerButton.add(btnViewFood);
+		managerButton.add(btnCleanFood);
 		managerTable.add(scroll, tableFood);
 
 		
@@ -229,7 +247,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 	
 		
 		//Giao diện phía trên
-		food = new JTextField(20);
+		searchFood = new JTextField(20);
 		btnSearchFood = new JButton("Tìm");
 		btnSearchFood.addActionListener(this);
 		btnSearchFood.setPreferredSize(new Dimension(100, 50));
@@ -246,7 +264,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		
 
 		
-		magagerSearch.add(food);
+		magagerSearch.add(searchFood);
 		magagerSearch.add(btnSearchFood);
 		manager.add(lblIdFood);
 		manager.add(idFood);
@@ -294,9 +312,9 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		btnDeleteFoodCategory.addActionListener(this);
 		btnDeleteFoodCategory.setPreferredSize(new Dimension(100, 50));
 		
-		btnViewFoodCategory = new JButton("Xem");
-		btnViewFoodCategory.addActionListener(this);
-		btnViewFoodCategory.setPreferredSize(new Dimension(100, 50));
+		btnCleanFoodCategory = new JButton("Clean");
+		btnCleanFoodCategory.addActionListener(this);
+		btnCleanFoodCategory.setPreferredSize(new Dimension(100, 50));
 		
 		tableFoodCategory = new JTable();
 		tableFoodCategory.addMouseListener(this);
@@ -310,7 +328,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		managerButton.add(btnAddFoodCategory);
 		managerButton.add(btnUpdateFoodCategory);
 		managerButton.add(btnDeleteFoodCategory);
-		managerButton.add(btnViewFoodCategory);
+		managerButton.add(btnCleanFoodCategory);
 		managerTable.add(scroll, tableFoodCategory);
 
 		
@@ -373,9 +391,9 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		btnDeleteTable.addActionListener(this);
 		btnDeleteTable.setPreferredSize(new Dimension(100, 50));
 		
-		btnViewTable = new JButton("Xem");
-		btnViewTable.addActionListener(this);
-		btnViewTable.setPreferredSize(new Dimension(100, 50));
+		btnCleanTable = new JButton("Clean");
+		btnCleanTable.addActionListener(this);
+		btnCleanTable.setPreferredSize(new Dimension(100, 50));
 		
 		table = new JTable(model);
 		table.addMouseListener(this);
@@ -389,7 +407,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		managerButton.add(btnAddTable);
 		managerButton.add(btnUpdateTable);
 		managerButton.add(btnDeleteTable);
-		managerButton.add(btnViewTable);
+		managerButton.add(btnCleanTable);
 		managerTable.add(scroll, table);
 
 		panel.add(managerButton);
@@ -456,9 +474,9 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		btnDeleteUser.addActionListener(this);
 		btnDeleteUser.setPreferredSize(new Dimension(100, 50));
 		
-		btnViewUser = new JButton("Xem");
-		btnViewUser.addActionListener(this);
-		btnViewUser.setPreferredSize(new Dimension(100, 50));
+		btnCleanUser = new JButton("Clean");
+		btnCleanUser.addActionListener(this);
+		btnCleanUser.setPreferredSize(new Dimension(100, 50));
 		
 		tableUser = new JTable(model);
 		tableUser.addMouseListener(this);
@@ -473,7 +491,7 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		managerButton.add(btnAddUser);
 		managerButton.add(btnUpdateUser);
 		managerButton.add(btnDeleteUser);
-		managerButton.add(btnViewUser);
+		managerButton.add(btnCleanUser);
 		managerTable.add(scroll, tableUser);
 		
 		panel.add(managerButton);
@@ -491,24 +509,20 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		//Giao diện phía trái và giữa
 		lblUsername = new JLabel("Tên tài khoản");
 		username = new JTextField(30);
-		lbltype = new JLabel("Loại tài khoản");
+		lblPassword = new JLabel("Mật khẩu");
+		password = new JTextField(30);
+		lblType = new JLabel("Loại tài khoản");
 		type = new JTextField(30);
-		btnUpdatePassword = new JButton("Đặt lại mật khẩu");
-		btnUpdatePassword.addActionListener(this);
-		//Space
-		JLabel space = new JLabel("");
-		JLabel lblAdvertise = new JLabel("-----------------------Mật khẩu mặc định là: 123456---------------------");
+
 		manager.add(lblUsername);
 		manager.add(username);
-		manager.add(lbltype);
+		manager.add(lblPassword);
+		manager.add(password);
+		manager.add(lblType);
 		manager.add(type);
-		manager.add(space);
-		manager.add(btnUpdatePassword);
-		manager.add(lblAdvertise);
 		
 		panel.add(manager);
 
-		
 		return panel;
 	}
 
@@ -523,319 +537,394 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		
 		return manager;
 	}
+	
+	@Override
+	public JPanel managerEmployeesAreaLeft() {
+		JPanel panel = new JPanel();
+		JPanel managerButton = new JPanel();
+		JPanel managerTable = new JPanel(new GridLayout(1, 1, 5, 5));
+		
+		//quản lí panel trên trái
+		btnAddEmployees = new JButton("Thêm");
+		btnAddEmployees.setPreferredSize(new Dimension(100, 50));
+		btnAddEmployees.addActionListener(this);
+		
+		btnUpdateEmployees = new JButton("Sửa");
+		btnUpdateEmployees.addActionListener(this);
+		btnUpdateEmployees.setPreferredSize(new Dimension(100, 50));
+		
+		btnDeleteEmployees = new JButton("Xóa");
+		btnDeleteEmployees.addActionListener(this);
+		btnDeleteEmployees.setPreferredSize(new Dimension(100, 50));
+		
+		btnCleanEmployees = new JButton("Clean");
+		btnCleanEmployees.addActionListener(this);
+		btnCleanEmployees.setPreferredSize(new Dimension(100, 50));
+		
+		tableEmployees = new JTable(model);
+		tableEmployees.addMouseListener(this);
+		tableEmployees.setPreferredSize(new Dimension(530, 800));
+		
+		// Đưa jtable vào trong thanh cuộn (khi dữ liệu quá nhiều dòng sẽ có thanh cuộn ngang và doc để xem dữ liệu)
+		scroll = new JScrollPane(tableEmployees);
+		scroll.setPreferredSize(new Dimension(530, 340));
+		
+		loadDatabaseEmployees();
+
+		managerButton.add(btnAddEmployees);
+		managerButton.add(btnUpdateEmployees);
+		managerButton.add(btnDeleteEmployees);
+		managerButton.add(btnCleanEmployees);
+		managerTable.add(scroll, tableEmployees);
+		
+		panel.add(managerButton);
+		panel.add(managerTable);
+		
+		return panel;
+	}
 
 	@Override
+	public JPanel managerEmployeesAreaRight() {
+		JPanel panel = new JPanel();
+		
+		JPanel manager = new JPanel(new GridLayout(16, 1, 5, 5));
+
+		//Giao diện phía trái và giữa
+		lblIdEmployees = new JLabel("ID");
+		idEmployees = new JTextField(25);
+		lblUsername_employees = new JLabel("Tài khoản");
+		username_employees = new JTextField(25);
+		lblFullName = new JLabel("Họ và tên");
+		fullName = new JTextField(25);
+		lblAge = new JLabel("Tuổi");
+		age = new JTextField(25);
+		lblAddress = new JLabel("Địa chỉ");
+		address = new JTextField(25);
+		lblPhoneNumber = new JLabel("Số điện thoại");
+		phoneNumber = new JTextField(25);
+		lblHomeTown = new JLabel("Quê quán");
+		homeTown = new JTextField(25);
+		lblIdentityCard= new JLabel("Số chứng minh nhân dân");
+		identityCard = new JTextField(25);
+
+		manager.add(lblIdEmployees);
+		manager.add(idEmployees);
+		manager.add(lblUsername_employees);
+		manager.add(username_employees);
+		manager.add(lblFullName);
+		manager.add(fullName);
+		manager.add(lblAge);
+		manager.add(age);
+		manager.add(lblAddress);
+		manager.add(address);
+		manager.add(lblPhoneNumber);
+		manager.add(phoneNumber);
+		manager.add(lblHomeTown);
+		manager.add(homeTown);
+		manager.add(lblIdentityCard);
+		manager.add(identityCard);
+
+		panel.add(manager);
+
+		
+		return panel;
+	}
+
+	@Override
+	public JSplitPane managerEmployeesArea() {
+		JSplitPane manager = new JSplitPane();
+		
+		manager.setLeftComponent(managerEmployeesAreaLeft());
+		manager.setRightComponent(managerEmployeesAreaRight());
+
+		manager.setDividerLocation(550);
+		
+		return manager;
+	}
+	
+	@Override
 	public void loadDatabaseFood() {
-		FoodDao kn = new FoodDao();
-		ConnectionUntil con = new ConnectionUntil();
-		try {
-			rs = kn.getAllFood();
-			String[] arr = {"Mã sản phẩm","Tên sản phẩm", "Loại sản phẩm", "Giá"};
-			model = new DefaultTableModel(arr, 0);
-			while(rs.next()) {
-				Vector<String> vc = new Vector<String>();
-				vc.add(rs.getString("idFood"));
-				vc.add(rs.getString("FoodName"));
-				vc.add(rs.getString("idFoodCategory"));
-				vc.add(rs.getString("price"));
-				
-				model.addRow(vc);
+		FoodDao foodDao = new FoodDao();
+		List<Food> listFood = foodDao.getAllFood();
+		String[] arr = {"Mã sản phẩm","Tên sản phẩm", "Loại sản phẩm", "Giá"};
+		model = new DefaultTableModel(arr, 0);
+		for(Food food : listFood) {
+			if(food.getDeleteValue() == 1) {
+				model.addRow(new String[] {String.valueOf(food.getIdFood()), 
+						food.getFoodName(), 
+						String.valueOf(food.getIdFoodCategory()), 
+						String.valueOf(food.getPrice())});
 			}
-			
-			tableFood.setModel(model);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			con.closeConnection(conn);
-			con.closeResultSet(rs);
-			con.closeStatement(st);
-		}	
+		}
+		tableFood.setModel(model);
 	}
 
 	@Override
 	public void loadDatabaseFoodCategory() {
-		FoodCategoryDao kn = new FoodCategoryDao();
-		ConnectionUntil con = new ConnectionUntil();
-		try {
-			rs = kn.getAllFoodCategory();
-			String[] arr = {"Mã loại","Tên loại"};
-			model = new DefaultTableModel(arr, 0);
-			while(rs.next()) {
-				Vector<String> vc = new Vector<String>();
-				vc.add(rs.getString("idFoodCategory"));
-				vc.add(rs.getString("FoodCategoryName"));
-				
-				model.addRow(vc);
+		FoodCategoryDao foodCategoryDao = new FoodCategoryDao();
+		List<FoodCategory> listFoodCategory = foodCategoryDao.getAllFoodCategory();
+		String[] arr = {"Mã loại sản phẩm","Tên loại sản phẩm"};
+		model = new DefaultTableModel(arr, 0);
+		for(FoodCategory foodCategory : listFoodCategory) {
+			if(foodCategory.getDeleteValue() == 1) {
+				model.addRow(new String[] {String.valueOf(foodCategory.getIdFoodCategory()), 
+						foodCategory.getFoodCategoryName()});
 			}
-			
-			tableFoodCategory.setModel(model);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			con.closeConnection(conn);
-			con.closeResultSet(rs);
-			con.closeStatement(st);
 		}
-		
+		tableFoodCategory.setModel(model);
 	}
 
 	@Override
 	public void loadDatabaseTableFood() {
-		TableFoodDao kn = new TableFoodDao();
-		ConnectionUntil con = new ConnectionUntil();
-		try {
-			rs = kn.getAllTableFood();
-			String[] arr = {"Mã bàn","Tên bàn", "Trạng thái bàn"};
-			model = new DefaultTableModel(arr, 0);
-			while(rs.next()) {
-				Vector<String> vc = new Vector<String>();
-				vc.add(rs.getString("idTableFood"));
-				vc.add(rs.getString("tableName"));
-				vc.add(rs.getString("tableStatus"));
-				
-				model.addRow(vc);
+		TableFoodDao tableFoodDao = new TableFoodDao();
+		List<TableFood> listTableFood= tableFoodDao.getAllTableFood();
+		String[] arr = {"Mã bàn", "Tên bàn","Trạng thái bàn"};
+		model = new DefaultTableModel(arr, 0);
+		for(TableFood tableFood : listTableFood) {
+			if(tableFood.getDeleteValue() == 1) {
+				model.addRow(new String[] {String.valueOf(tableFood.getIdTableFood()), 
+						String.valueOf(tableFood.getTableName()),
+						tableFood.getTableStatus()});
 			}
-			
-			table.setModel(model);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			con.closeConnection(conn);
-			con.closeResultSet(rs);
-			con.closeStatement(st);
 		}
+		table.setModel(model);
 	}
 
 	@Override
 	public void loadDatabaseUser() {
-		UserDao kn = new UserDao();
-		ConnectionUntil con = new ConnectionUntil();
-		try {
-			rs = kn.getAllUser();
-			String[] arr = {"Tài khoản","Loại tài khoản"};
-			model = new DefaultTableModel(arr, 0);
-			while(rs.next()) {
-				Vector<String> vc = new Vector<String>();
-				vc.add(rs.getString("username"));
-				vc.add(rs.getString("type"));
-				
-				model.addRow(vc);
+		UserDao userDao = new UserDao();
+		List<User> listUser = userDao.getAllUser();
+		String[] arr = {"Username", "Password", "Loại tài khoản"};
+		model = new DefaultTableModel(arr, 0);
+		for(User user : listUser) {
+			if(user.getDeleteValue() == 1) {
+				model.addRow(new String[] {user.getUsername(), 
+						user.getPassword(),
+						String.valueOf(user.getType())});
 			}
-			
-			tableUser.setModel(model);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			con.closeConnection(conn);
-			con.closeResultSet(rs);
-			con.closeStatement(st);
 		}
-		
+		tableUser.setModel(model);
 	}
 	
+	@Override
+	public void loadDatabaseEmployees() {
+		EmployeesDao employeesDao = new EmployeesDao();
+		List<Employees> listEmployees = employeesDao.getAllEmployees();
+		String[] arr = {"ID","Tài khoản", "Họ và tên", "Tuổi", "Địa chỉ", "Số điện thoại", "Quê quán", "CMND"};
+		model = new DefaultTableModel(arr, 0);
+		for(Employees employees : listEmployees) {
+			if(employees.getDeleteValue() == 1) {
+				model.addRow(new String[] {String.valueOf(employees.getIdEmployees()), 
+						employees.getUsername(),
+						employees.getFullName(),
+						String.valueOf(employees.getAge()),
+						employees.getAddress(),
+						String.valueOf(employees.getPhoneNumber()),
+						employees.getHomeTown(),
+						String.valueOf(employees.getIdentityCard())});
+			}
+		}
+		tableEmployees.setModel(model);
+		
+	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == btnAddTable) {
-			TableFoodDao kn = new TableFoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.insertTableFood(Integer.parseInt(idTableFood.getText()), Integer.parseInt(tableFoodName.getText()), tableStatus.getText());
-				loadDatabaseTableFood();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Thêm thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
-			
+			int deleteValue = 0;
+			TableFoodDao tableFoodDao = new TableFoodDao();	
+			TableFood tableFood = new TableFood(Integer.parseInt(idTableFood.getText()), 
+					Integer.parseInt(tableFoodName.getText()), 
+					tableStatus.getText(), 
+					deleteValue);	
+			tableFoodDao.insertTableFood(tableFood);
+			loadDatabaseTableFood();	
 		} if(e.getSource() == btnUpdateTable) {
-			TableFoodDao kn = new TableFoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.updateTableFood(Integer.parseInt(idTableFood.getText()), Integer.parseInt(tableFoodName.getText()), tableStatus.getText());
-				loadDatabaseTableFood();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Sửa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
+			int deleteValue = 0;
+			TableFoodDao tableFoodDao = new TableFoodDao();	
+			TableFood tableFood = new TableFood(Integer.parseInt(idTableFood.getText()), 
+					Integer.parseInt(tableFoodName.getText()), 
+					tableStatus.getText(), 
+					deleteValue);	
+			tableFoodDao.updateTableFood(tableFood);
+			loadDatabaseTableFood();	
 		} if(e.getSource() == btnDeleteTable) {
-			TableFoodDao kn = new TableFoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.deleteTableFood(Integer.parseInt(idTableFood.getText()));
-				loadDatabaseTableFood();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Xóa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
-			
+			int deleteValue = 0;
+			TableFoodDao tableFoodDao = new TableFoodDao();	
+			TableFood tableFood = new TableFood(Integer.parseInt(idTableFood.getText()), 
+					Integer.parseInt(tableFoodName.getText()), 
+					tableStatus.getText(), 
+					deleteValue);	
+			tableFoodDao.deleteTableFood(tableFood);
+			loadDatabaseTableFood();	
+		} if(e.getSource() == btnCleanTable) {
+			idTableFood.setText("");
+			tableFoodName.setText("");
+			tableStatus.setText("");
 		} if(e.getSource()==btnAddFood) {
-			FoodDao kn = new FoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.insertFood(Integer.parseInt(idFood.getText()), foodName.getText(),Integer.parseInt(idFoodCategory_food.getText()), Double.parseDouble(price.getText()));
-				loadDatabaseFood();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Thêm thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}	
+			int deleteValue = 0;
+			FoodDao foodDao = new FoodDao();	
+			Food food = new Food(Integer.parseInt(idFood.getText()), 
+					foodName.getText(), 
+					Integer.parseInt(idFoodCategory_food.getText()), 
+					Double.parseDouble(price.getText()),
+					deleteValue);	
+			foodDao.insertFood(food);
+			loadDatabaseFood();	
 		} if(e.getSource() == btnUpdateFood) {
-			FoodDao kn = new FoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.updateFood(Integer.parseInt(idFood.getText()), foodName.getText(),Integer.parseInt(idFoodCategory_food.getText()), Double.parseDouble(price.getText()));
-				loadDatabaseFood();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Sửa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
+			int deleteValue = 0;
+			FoodDao foodDao = new FoodDao();
+			Food food = new Food(Integer.parseInt(idFood.getText()), 
+					foodName.getText(), 
+					Integer.parseInt(idFoodCategory_food.getText()), 
+					Double.parseDouble(price.getText()),
+					deleteValue);	
+			foodDao.updateFood(food);
+			loadDatabaseFood();	
 		} if(e.getSource() == btnDeleteFood) {
-			FoodDao kn = new FoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.deleteFood(Integer.parseInt(idFood.getText()));
-				loadDatabaseFood();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Xóa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}	
+			int deleteValue = 0;
+			FoodDao foodDao = new FoodDao();	
+			Food food = new Food(Integer.parseInt(idFood.getText()), 
+					foodName.getText(), 
+					Integer.parseInt(idFoodCategory_food.getText()), 
+					Double.parseDouble(price.getText()),
+					deleteValue);	
+			foodDao.deleteFood(food);
+			loadDatabaseFood();	
+		}  if(e.getSource() == btnCleanFood) {
+			idFood.setText("");
+			foodName.setText("");
+			idFoodCategory_food.setText("");
+			price.setText("");
 		} if(e.getSource() == btnSearchFood) {
-			//Xóa các record trong tableFood
-			model.getDataVector().removeAllElements();
-			model.fireTableDataChanged();
-			FoodDao kn = new FoodDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				rs = kn.searchFood(food.getText());
-				String[] arr = {"Mã sản phẩm","Tên sản phẩm", "Loại sản phẩm", "Giá"};
-				model = new DefaultTableModel(arr, 0);
-				while(rs.next()) {
-					Vector<String> vc = new Vector<String>();
-					vc.add(rs.getString("idFood"));
-					vc.add(rs.getString("FoodName"));
-					vc.add(rs.getString("idFoodCategory"));
-					vc.add(rs.getString("price"));
-					
-					model.addRow(vc);
+			FoodDao foodDao = new FoodDao();
+			List<Food> listFood = foodDao.searchFood(searchFood.getText());
+			String[] arr = {"Mã sản phẩm","Tên sản phẩm", "Loại sản phẩm", "Giá", "Giá trị xóa"};
+			model = new DefaultTableModel(arr, 0);
+			for(Food food : listFood) {
+				if(food.getDeleteValue() == 1) {
+					model.addRow(new String[] {String.valueOf(food.getIdFood()), 
+							food.getFoodName(), 
+							String.valueOf(food.getIdFoodCategory()), 
+							String.valueOf(food.getPrice()),  
+							String.valueOf(food.getDeleteValue())});
 				}
-				tableFood.setModel(model);
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Tìm kiếm thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeResultSet(rs);
-				con.closeStatement(st);
-			}			
+			}
+			tableFood.setModel(model);
 		} if(e.getSource()==btnAddFoodCategory) {
-			FoodCategoryDao kn = new FoodCategoryDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.insertFoodCategory(Integer.parseInt(idFoodCategory.getText()), foodCategoryName.getText());
-				loadDatabaseFoodCategory();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Thêm thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
-			
+			int deleteValue = 0;
+			FoodCategoryDao foodCategoryDao = new FoodCategoryDao();	
+			FoodCategory foodCategory = new FoodCategory(Integer.parseInt(idFoodCategory.getText()), 
+					foodCategoryName.getText(), 
+					deleteValue);	
+			foodCategoryDao.insertFoodCategory(foodCategory);
+			loadDatabaseFoodCategory();	
 		} if(e.getSource() == btnUpdateFoodCategory) {
-			FoodCategoryDao kn = new FoodCategoryDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.updateFoodCategory(Integer.parseInt(idFoodCategory.getText()), foodCategoryName.getText());
-				loadDatabaseFoodCategory();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Sửa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
+			int deleteValue = 0;
+			FoodCategoryDao foodCategoryDao = new FoodCategoryDao();	
+			FoodCategory foodCategory = new FoodCategory(Integer.parseInt(idFoodCategory.getText()), 
+					foodCategoryName.getText(), 
+					deleteValue);	
+			foodCategoryDao.updateFoodCategory(foodCategory);
+			loadDatabaseFoodCategory();
 		} if(e.getSource() == btnDeleteFoodCategory) {
-			FoodCategoryDao kn = new FoodCategoryDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.deleteFoodCategory(Integer.parseInt(idFoodCategory.getText()));
-				loadDatabaseFoodCategory();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Xóa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
-			
+			int deleteValue = 0;
+			FoodCategoryDao foodCategoryDao = new FoodCategoryDao();	
+			FoodCategory foodCategory = new FoodCategory(Integer.parseInt(idFoodCategory.getText()), 
+					foodCategoryName.getText(), 
+					deleteValue);	
+			foodCategoryDao.deleteFoodCategory(foodCategory);
+			loadDatabaseFoodCategory();
+		}  if(e.getSource() == btnCleanFoodCategory) {
+			idFoodCategory.setText("");
+			foodCategoryName.setText("");
 		} if(e.getSource()==btnAddUser) {
-			UserDao kn = new UserDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.insertUser(username.getText(), Integer.parseInt(type.getText()));
-				loadDatabaseUser();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Thêm thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
-			
+			int deleteValue = 0;
+			UserDao userDao = new UserDao();	
+			User user = new User(username.getText(), 
+					password.getText(), 
+					Integer.parseInt(type.getText()),
+					deleteValue);	
+			userDao.insertUser(user);
+			loadDatabaseUser();	
 		} if(e.getSource() == btnUpdateUser) {
-			UserDao kn = new UserDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.updateUser(username.getText(), Integer.parseInt(type.getText()));
-				loadDatabaseUser();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Sửa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
+		
 		} if(e.getSource() == btnDeleteUser) {
-			UserDao kn = new UserDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.deleteUser(username.getText());
-				loadDatabaseUser();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Xóa thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
-		} if(e.getSource() == btnUpdatePassword) {
-			UserDao kn = new UserDao();
-			ConnectionUntil con = new ConnectionUntil();
-			try {
-				kn.resetPassword(username.getText());
-				loadDatabaseUser();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Đặt lại mật khẩu thất bại");
-			} finally {
-				con.closeConnection(conn);
-				con.closeStatement(st);
-			}
+			int deleteValue = 0;
+			UserDao userDao = new UserDao();	
+			User user = new User(username.getText(), 
+					password.getText(), 
+					Integer.parseInt(type.getText()),
+					deleteValue);	
+			userDao.deleteUser(user);
+			loadDatabaseUser();	
+		}  if(e.getSource() == btnCleanUser) {
+			username.setText("");
+			password.setText("");
+			type.setText("");
+		} if(e.getSource() == btnAddEmployees) {
+			int deleteValue = 0;
+			EmployeesDao employeesDao = new EmployeesDao();	
+			Employees employees = new Employees(Integer.parseInt(idEmployees.getText()),
+					username_employees.getText(),
+					fullName.getText(), 
+					Integer.parseInt(age.getText()),
+					address.getText(),
+					Integer.parseInt(phoneNumber.getText()),
+					homeTown.getText(),
+					Integer.parseInt(identityCard.getText()),
+					deleteValue);	
+			employeesDao.insertEmployees(employees);
+			loadDatabaseEmployees();
+		} if(e.getSource() == btnUpdateEmployees) {
+			int deleteValue = 0;
+			EmployeesDao employeesDao = new EmployeesDao();	
+			Employees employees = new Employees(Integer.parseInt(idEmployees.getText()),
+					username_employees.getText(),
+					fullName.getText(), 
+					Integer.parseInt(age.getText()),
+					address.getText(),
+					Integer.parseInt(phoneNumber.getText()),
+					homeTown.getText(),
+					Integer.parseInt(identityCard.getText()),
+					deleteValue);	
+			employeesDao.updateEmployees(employees);
+			loadDatabaseEmployees();
+		} if(e.getSource() == btnDeleteEmployees) {
+			int deleteValue = 0;
+			EmployeesDao employeesDao = new EmployeesDao();	
+			Employees employees = new Employees(Integer.parseInt(idEmployees.getText()),
+					username_employees.getText(),
+					fullName.getText(), 
+					Integer.parseInt(age.getText()),
+					address.getText(),
+					Integer.parseInt(phoneNumber.getText()),
+					homeTown.getText(),
+					Integer.parseInt(identityCard.getText()),
+					deleteValue);	
+			employeesDao.deleteEmployees(employees);
+			loadDatabaseEmployees();
+		} if(e.getSource() == btnCleanEmployees) {
+			idEmployees.setText("");
+			username_employees.setText("");
+			fullName.setText("");
+			age.setText("");
+			address.setText("");
+			phoneNumber.setText("");
+			homeTown.setText("");
+			identityCard.setText("");
 		}
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		//Sự kiên click table
-		int i = table.getSelectedRow();
-		idTableFood.setText(table.getValueAt(i, 0).toString());
-		tableFoodName.setText(table.getValueAt(i, 1).toString());
-		tableStatus.setText(table.getValueAt(i, 2).toString());
+//		//Sự kiên click table
+//		int i = table.getSelectedRow();
+//		idTableFood.setText(table.getValueAt(i, 0).toString());
+//		tableFoodName.setText(table.getValueAt(i, 1).toString());
+//		tableStatus.setText(table.getValueAt(i, 2).toString());
 		
-//		//Sự kiên click Food
+		//Sự kiên click Food
 //		int n = tableFood.getSelectedRow();
 //		idFood.setText(tableFood.getValueAt(n, 0).toString());
 //		foodName.setText(tableFood.getValueAt(n, 1).toString());
@@ -848,12 +937,22 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 //		foodCategoryName.setText(tableFoodCategory.getValueAt(a, 1).toString());
 //		}
 		
-//		//Sự kiên click user
-//		int b = tableUser.getSelectedRow();
-//		username.setText(tableUser.getValueAt(b, 0).toString());
-//		password.setText(tableUser.getValueAt(b, 1).toString());
-//		displayName.setText(tableUser.getValueAt(b, 2).toString());
-//		type.setText(tableUser.getValueAt(b, 3).toString());		
+		//Sự kiên click user
+		int b = tableUser.getSelectedRow();
+		username.setText(tableUser.getValueAt(b, 0).toString());
+		password.setText(tableUser.getValueAt(b, 1).toString());
+		type.setText(tableUser.getValueAt(b, 2).toString());
+		
+//		//Sự kiện click employees
+//		int b = tableEmployees.getSelectedRow();
+//		idEmployees.setText(tableEmployees.getValueAt(b, 0).toString());
+//		username_employees.setText(tableEmployees.getValueAt(b, 1).toString());
+//		fullName.setText(tableEmployees.getValueAt(b, 2).toString());
+//		age.setText(tableEmployees.getValueAt(b, 3).toString());
+//		address.setText(tableEmployees.getValueAt(b, 4).toString());
+//		phoneNumber.setText(tableEmployees.getValueAt(b, 5).toString());
+//		homeTown.setText(tableEmployees.getValueAt(b, 6).toString());
+//		identityCard.setText(tableEmployees.getValueAt(b, 7).toString());
 	}
 
 	@Override
@@ -879,6 +978,5 @@ public class FormAdminView extends JFrame implements IFormAdminView, ActionListe
 		// TODO Auto-generated method stub
 		
 	}
-
 
 }

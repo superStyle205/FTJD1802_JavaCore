@@ -2,78 +2,116 @@ package model.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import common.database.ConnectionUntil;
+import model.bean.Food;
+import model.bean.TableFood;
 
 public class TableFoodDao implements ITableFoodDao {
-	private ConnectionUntil cn = new ConnectionUntil();
+	private ConnectionUntil con = new ConnectionUntil();
 	Connection conn;
-	Statement st;
+	PreparedStatement st;
 	ResultSet rs;
+	List<TableFood> listTableFood;
+	TableFood tableFood;
+	int status = 0;
+	boolean statusExecute = false;
 	
 	@Override
-	public ResultSet getAllTableFood() {
-		conn = cn.getConnection();
+	public List<TableFood> getAllTableFood() {
+		conn = con.getConnection();
+		listTableFood = new ArrayList<TableFood>();
 		try {
 			String sql = "select * from tablefood";
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
+			st = conn.prepareStatement(sql);
+			rs = st.executeQuery();
+			while(rs.next()) {
+				tableFood = new TableFood(rs.getInt("idTableFood"), 
+						rs.getInt("tableName"), 
+						rs.getString("tableStatus"), 
+						rs.getInt("deleteValue"));
+				listTableFood.add(tableFood);
+			}
+			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		return rs;
+		} finally {
+			con.closeResultSet(rs);
+			con.closeStatement(st);
+			con.closeConnection(conn);
+		} 
+		return listTableFood;
 	}
 
 	@Override
-	public boolean insertTableFood(int idTableFood, int tableFoodName, String tableStatus) {
-		conn = cn.getConnection();
+	public boolean insertTableFood(TableFood tableFood) {
+		conn = con.getConnection();
 		try {
-			String sql = "Insert into tablefood values(" + idTableFood + ",'" + tableFoodName + "','" + tableStatus + "')";
-			st = conn.createStatement();
-			st.executeUpdate(sql);
+			String sql = "Insert into tablefood values(?,?,?,?)";
+			st = conn.prepareStatement(sql);
+			st.setInt(1, tableFood.getIdTableFood());
+			st.setInt(2, tableFood.getTableName());
+			st.setString(3, tableFood.getTableStatus());
+			st.setInt(4, 1);
+			status = st.executeUpdate();
 			JOptionPane.showMessageDialog(null, "Thêm thành công");
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Thêm thất bại");
 			e.printStackTrace();
 		}
-		return false;
+		return status > 0 ? true : false;
 	}
 
 	@Override
-	public boolean updateTableFood(int idTableFood, int tableFoodName, String tableStatus) {
-		conn = cn.getConnection();
+	public boolean updateTableFood(TableFood tableFood) {
+		conn = con.getConnection();
 		try {
-			String sql = "Update tablefood set idTableFood = '" + idTableFood  + "', tableName = '" + tableFoodName + "', tableStatus = '" + tableStatus + "' where idTableFood = '" + idTableFood + "'";
-			st = conn.createStatement();
-			st.executeUpdate(sql);
-			JOptionPane.showMessageDialog(null, "Sửa thành công");
+			String sql = "Update tablefood set tableName = ?, tableStatus = ?, deleteValue = ? where idTableFood = ?";
+			st = conn.prepareStatement(sql);
+			st.setInt(1, tableFood.getTableName());
+			st.setString(2, tableFood.getTableStatus());
+			st.setInt(3, 1);
+			st.setInt(4, tableFood.getIdTableFood());
+			status = st.executeUpdate();
+			if (st.executeUpdate() > 0) {
+				statusExecute = true;
+				JOptionPane.showMessageDialog(null, "Sửa thành công");
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Sửa thất bại");
 			e.printStackTrace();
 		}
-		return false;
+		return statusExecute;
 	}
 
 	@Override
-	public boolean deleteTableFood(int idTableFood) {
-		conn = cn.getConnection();
+	public boolean deleteTableFood(TableFood tableFood) {
+		conn = con.getConnection();
 		try {
-
-			String sql = "Delete from tablefood where idTableFood = " + idTableFood + "";
-			Statement st = conn.createStatement();
-			st.executeUpdate(sql);
-			JOptionPane.showMessageDialog(null, "Xóa thành công");
+			String sql = "Update tablefood set tableName = ?, tableStatus = ?, deleteValue = ? where idTableFood = ?";
+			st = conn.prepareStatement(sql);
+			st.setInt(1, tableFood.getTableName());
+			st.setString(2, tableFood.getTableStatus());
+			st.setInt(3, 0);
+			st.setInt(4, tableFood.getIdTableFood());
+			status = st.executeUpdate();
+			if (st.executeUpdate() > 0) {
+				statusExecute = true;
+				JOptionPane.showMessageDialog(null, "Xóa thành công");
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Xóa thất bại");
 			e.printStackTrace();
 		}
-		return false;
+		return statusExecute;
 	}
 
 }

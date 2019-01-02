@@ -3,26 +3,30 @@ package view;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 import common.database.ConnectionUntil;
 import model.dao.FormLoginDao;
 
-public class FormLoginView extends JFrame implements IFormLoginView, ActionListener  {
+public class FormLoginView extends JFrame implements IFormLoginView, ActionListener {
 
 	private JLabel lblTitle;
 	private JLabel lblUsername;
-	private JTextField username;
+	static JTextField username;
 	private JLabel lblPassword;
 	private JPasswordField password;
 	private JLabel lblCheckBox;
@@ -69,6 +73,7 @@ public class FormLoginView extends JFrame implements IFormLoginView, ActionListe
 		checkBox.addActionListener(this);
 		btnLogin = new JButton("Đăng nhập");
 		btnLogin.addActionListener(this);
+		getRootPane().setDefaultButton(btnLogin);
 		btnExit = new JButton("Thoát");
 		btnExit.addActionListener(this);
 		
@@ -86,32 +91,35 @@ public class FormLoginView extends JFrame implements IFormLoginView, ActionListe
 		
 		return panel;
 	}
+	
+	public void enter() {
+		if(username.getText().equals("") || password.getText().equals("")) {
+			JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ tài khoản và mật khẩu");
+		}else {//Ngược lại, tài khoản và mật khẩu nhập vào.
+			FormLoginDao lg = new FormLoginDao();
+			ConnectionUntil con = new ConnectionUntil();
+			try {
+				lg.checkLogin(username.getText(), password.getText());
+				JOptionPane.showMessageDialog(null, "Đăng nhập thành công");
+				FormManagerMainView mainView = new FormManagerMainView();
+				mainView.display();
+				dispose();
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null,"Đăng nhập thất bại");
+				ex.printStackTrace();
+			} finally {
+				con.closeConnection(conn);
+				con.closeResultSet(rs);
+				con.closeStatement(st);
+			}
+		}
+	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == btnLogin) {
-			if(username.getText().equals("") || password.getText().equals("")) {
-				JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ tài khoản và mật khẩu");
-			}else {//Ngược lại, tài khoản và mật khẩu nhập vào.
-				FormLoginDao lg = new FormLoginDao();
-				ConnectionUntil con = new ConnectionUntil();
-				try {
-					lg.checkLogin(username.getText(), password.getText());
-					JOptionPane.showMessageDialog(null, "Đăng nhập thành công");
-					FormManagerMainView mainView = new FormManagerMainView();
-					mainView.display();
-					dispose();
-				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null,"Đăng nhập thất bại");
-					ex.printStackTrace();
-				} finally {
-					con.closeConnection(conn);
-					con.closeResultSet(rs);
-					con.closeStatement(st);
-				}
-				 
-			}
+			enter();
 		} if(e.getSource() == btnExit) {
 			//icon mặc định, tiêu đề tùy chỉnh
 			int n = JOptionPane.showConfirmDialog(login, "Bạn thật sự muốn thoát ?", "Thông báo", JOptionPane.YES_NO_OPTION);

@@ -1,81 +1,112 @@
 package model.dao;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import common.database.ConnectionUntil;
+import model.bean.Food;
+import model.bean.FoodCategory;
 
 public class FoodCategoryDao implements IFoodCategoryDao{
 
-	private ConnectionUntil cn = new ConnectionUntil();
+	private ConnectionUntil con = new ConnectionUntil();
 	Connection conn;
-	Statement st;
+	PreparedStatement st;
+	ResultSet rs;
+	FoodCategory foodCategory;
+	List<FoodCategory> listFoodCategory;
+	int status = 0;
+	boolean statusExecute = false;
 	
 	@Override
-	public ResultSet getAllFoodCategory() {
-		conn = cn.getConnection();
-		ResultSet rs = null;
-		String sql = "select * from foodcategory";
-		Statement st;
+	public List<FoodCategory> getAllFoodCategory() {
+		conn = con.getConnection();
+		listFoodCategory = new ArrayList<FoodCategory>();
 		try {
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
+			String sql = "select * from foodcategory";
+			st = conn.prepareStatement(sql);
+			rs = st.executeQuery();
+			while(rs.next()) {
+				foodCategory = new FoodCategory(rs.getInt("idFoodCategory"), 
+						rs.getString("foodCategoryName"),
+						rs.getInt("deleteValue"));
+				listFoodCategory.add(foodCategory);
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		return rs;
+		} finally {
+			con.closeResultSet(rs);
+			con.closeStatement(st);
+			con.closeConnection(conn);
+		} 
+		return listFoodCategory;
 	}
 
-	@Override
-	public boolean insertFoodCategory(int idFoodCategory, String FoodCategoryName) {
-		Statement st;
-		conn = cn.getConnection();
+	public boolean insertFoodCategory (FoodCategory foodCategory) {
+		conn = con.getConnection();
 		try {
-			st = conn.createStatement();
-			String sql = "Insert into foodcategory values(" + idFoodCategory + ",'" + FoodCategoryName + "')";
+			String sql = "Insert into foodcategory values(?,?,?)";
+			st = conn.prepareStatement(sql);
+			st.setInt(1, foodCategory.getIdFoodCategory());
+			st.setString(2, foodCategory.getFoodCategoryName());
+			st.setInt(3, 1);
+			status = st.executeUpdate();
 			JOptionPane.showMessageDialog(null, "Thêm thành công");
-			st.executeUpdate(sql);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Thêm thất bại");
+		} finally {
+			con.closeConnection(conn);
+			con.closeStatement(st);
 		}
-		return false;
+		return status > 0 ? true : false;
 	}
 
 	@Override
-	public boolean updateFoodCategory(int idFoodCategory, String FoodCategoryName) {
-		conn = cn.getConnection();
-		Statement st;
+	public boolean updateFoodCategory (FoodCategory foodCategory) {
+		conn = con.getConnection();
 		try {
-			st = conn.createStatement();
-			String sql = "Update foodcategory set idFoodCategory = '" + idFoodCategory + "', foodCategoryName = '" + FoodCategoryName + "' where idFoodCategory = '" + idFoodCategory + "'";
-			JOptionPane.showMessageDialog(null, "Sửa thành công");
-			st.executeUpdate(sql);
+			String sql = "Update foodcategory set foodCategoryName = ?,  deleteValue = ? where idFoodCategory = ?";
+			st = conn.prepareStatement(sql);
+			st.setString(1, foodCategory.getFoodCategoryName());
+			st.setInt(2, 1);
+			st.setInt(3, foodCategory.getIdFoodCategory());
+			if (st.executeUpdate() > 0) {
+				statusExecute = true;
+				JOptionPane.showMessageDialog(null, "Sửa thành công");
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Sửa thất bại");
 			e.printStackTrace();
-		}
-		return false;
+		} 
+		return statusExecute;
 	}
 
 	@Override
-	public boolean deleteFoodCategory(int idFoodCategory) {
+	public boolean deleteFoodCategory (FoodCategory foodCategory) {
+		conn = con.getConnection();
 		try {
-			conn = cn.getConnection();
-			Statement st = conn.createStatement();
-			String sql = "Delete from foodcategory where idFoodCategory = " + idFoodCategory + "";
-			JOptionPane.showMessageDialog(null, "Xóa thành công");
-			st.executeUpdate(sql);
+			String sql = "Update foodcategory set foodCategoryName = ?,  deleteValue = ? where idFoodCategory = ?";
+			st = conn.prepareStatement(sql);
+			st.setString(1, foodCategory.getFoodCategoryName());
+			st.setInt(2, 0);
+			st.setInt(3, foodCategory.getIdFoodCategory());
+			if (st.executeUpdate() > 0) {
+				statusExecute = true;
+				JOptionPane.showMessageDialog(null, "Xóa thành công");
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Xóa thất bại");
 			e.printStackTrace();
-		}
-		return false;
+		} 
+		return statusExecute;
 	}
-
+	
 }

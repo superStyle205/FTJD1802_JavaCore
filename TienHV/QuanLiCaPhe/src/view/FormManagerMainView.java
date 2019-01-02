@@ -38,7 +38,7 @@ import common.database.ConnectionUntil;
 import model.dao.FormManagerMainDao;
 import model.dao.TableFoodDao;
 import model.dao.UserDao;
-import testing.GetAllDatabase;
+
 
 public class FormManagerMainView extends JFrame implements IFormManagerMainView, ActionListener {
 
@@ -47,6 +47,7 @@ public class FormManagerMainView extends JFrame implements IFormManagerMainView,
 	private JMenu mnThongTin;
 	private JMenuItem mnThongTinCaNhan;
 	private JMenuItem mnDoiMatKhau;
+	private JMenuItem mnDatLaiMatKhau;
 	private JMenuItem mnDangXuat;
 	private JMenuItem mnFileExit;
 	private JMenuItem mnAdminstrator;
@@ -110,6 +111,8 @@ public class FormManagerMainView extends JFrame implements IFormManagerMainView,
 		mnThongTinCaNhan.addActionListener(this);
 		mnDoiMatKhau = new JMenuItem("Đổi mật khẩu");
 		mnDoiMatKhau.addActionListener(this);
+		mnDatLaiMatKhau = new JMenuItem("Đặt lại mật khẩu");
+		mnDatLaiMatKhau.addActionListener(this);
 		mnDangXuat = new JMenuItem("Đăng xuất");
 		mnDangXuat.addActionListener(this);
 		mnFileExit = new JMenuItem("Exit");
@@ -122,6 +125,7 @@ public class FormManagerMainView extends JFrame implements IFormManagerMainView,
 		//thêm 3 menu con vào menu cha là Thông tin cá nhân
 		mnThongTin.add(mnThongTinCaNhan);
 		mnThongTin.add(mnDoiMatKhau);
+		mnThongTin.add(mnDatLaiMatKhau);
 		mnThongTin.add(mnDangXuat);
 		mnThongTin.addSeparator();
 		mnThongTin.add(mnFileExit);
@@ -387,30 +391,15 @@ public class FormManagerMainView extends JFrame implements IFormManagerMainView,
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == mnAdminstrator) {
-			ConnectionUntil cn = new ConnectionUntil();
-			conn = cn.getConnection();
-			try {
-				String sql = "select * from user";
-				st = conn.createStatement();
-				rs = st.executeQuery(sql);
-				while(rs.next()) {
-					if("1".equals(rs.getString("type"))) {
-						FormAdminView admin = new FormAdminView();
-						admin.display();
-					}else { 
-						mnAdmin.setEnabled(false);
-						mnAdminstrator.setEnabled(false);
-					}
-				}
-			} catch (Exception e2) {
-				e2.printStackTrace();
-			}
-		
-			
+			FormAdminView admin = new FormAdminView();
+			admin.display();
 		}if(e.getSource() == mnThongTinCaNhan) {
 			PersonalInfomationView pi = new PersonalInfomationView();
 			pi.display();	
 		}if(e.getSource() == mnDoiMatKhau) {
+			ChangePasswordView cp = new ChangePasswordView();
+			cp.display();
+		}if(e.getSource() == mnDatLaiMatKhau) {
 			ResetPasswordView rp = new ResetPasswordView();
 			rp.display();
 		}if(e.getSource() == mnDangXuat) {

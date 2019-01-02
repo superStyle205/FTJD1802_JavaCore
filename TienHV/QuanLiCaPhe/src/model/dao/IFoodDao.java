@@ -1,16 +1,19 @@
 package model.dao;
 
 import java.sql.ResultSet;
+import java.util.List;
+
+import model.bean.Food;
 
 public interface IFoodDao {
 	
-	ResultSet getAllFood();
+	List<Food> getAllFood();
 	
-	boolean  deleteFood(int idFood);
+	boolean  deleteFood(Food food);
 
-	boolean insertFood(int idFood, String foodName, int idFoodCategory, double price);
+	boolean insertFood(Food food);
 
-	boolean updateFood(int idFood, String foodName, int idFoodCategory, double price);
+	boolean updateFood(Food food);
 	
-	ResultSet searchFood(String food);
+	List<Food> searchFood(String searchFood);
 }

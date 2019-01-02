@@ -1,15 +1,18 @@
 package model.dao;
 
-import java.sql.ResultSet;
+import java.util.List;
+import model.bean.User;
 
 public interface IUserDao {
-	ResultSet getAllUser();
+	List<User> getAllUser();
 	
-	boolean insertUser(String username, int type);
+	boolean insertUser(User user);
 	
-	boolean updateUser(String username, int type);
+	boolean updateUser(User user);
 	
-	boolean  deleteUser(String username);
+	boolean  deleteUser(User user);
 	
-	boolean resetPassword(String username);
+	boolean resetPassword(User user);
+	
+	boolean changePassword(User user);
 }

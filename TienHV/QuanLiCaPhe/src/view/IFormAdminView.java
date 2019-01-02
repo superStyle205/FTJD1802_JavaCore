@@ -35,6 +35,12 @@ public interface IFormAdminView {
 	
 	JSplitPane managerUserArea();
 	
+	JPanel managerEmployeesAreaLeft();
+	
+	JPanel managerEmployeesAreaRight();
+	
+	JSplitPane managerEmployeesArea();
+	
 	public void loadDatabaseFood();
 	
 	public void loadDatabaseFoodCategory();
@@ -42,4 +48,6 @@ public interface IFormAdminView {
 	public void loadDatabaseTableFood();
 	
 	public void loadDatabaseUser();
+	
+	public void loadDatabaseEmployees();
 }

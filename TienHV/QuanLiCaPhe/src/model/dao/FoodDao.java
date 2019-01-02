@@ -1,89 +1,138 @@
 package model.dao;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
 import common.database.ConnectionUntil;
+import model.bean.Food;
 
 public class FoodDao implements IFoodDao {
 	private ConnectionUntil con = new ConnectionUntil();
 	Connection conn;
-	Statement st;
+	PreparedStatement st;
 	ResultSet rs;
+	Food food;
+	List<Food> listFood;
+	int status = 0;
+	boolean statusExecute = false;
 	
 	@Override
-	public ResultSet getAllFood() {
+	public List<Food> getAllFood() {
 		conn = con.getConnection();
+		listFood = new ArrayList<Food>();
 		try {
 			String sql = "select * from food";
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
+			st = conn.prepareStatement(sql);
+			rs = st.executeQuery();
+			while(rs.next()) {
+				food = new Food(rs.getInt("idFood"), 
+						rs.getString("foodName"), 
+						rs.getInt("idFoodCategory"), 
+						rs.getDouble("price"),
+						rs.getInt("deleteValue"));
+				listFood.add(food);
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			con.closeResultSet(rs);
+			con.closeStatement(st);
+			con.closeConnection(conn);
 		} 
-		return rs;
+		return listFood;
 	}
 
-	public boolean insertFood(int idFood, String foodName, int idFoodCategory, double price) {
+	public boolean insertFood(Food food) {
 		conn = con.getConnection();
 		try {
-			st = conn.createStatement();
-			String sql = "Insert into food values(" + idFood + ",'" + foodName + "','" + idFoodCategory + "','" + price + "')";
+			String sql = "Insert into food values(?,?,?,?,?)";
+			st = conn.prepareStatement(sql);
+			st.setInt(1, food.getIdFood());
+			st.setString(2, food.getFoodName());
+			st.setInt(3, food.getIdFoodCategory());
+			st.setDouble(4, food.getPrice());
+			st.setInt(5, 1);
+			status = st.executeUpdate();
 			JOptionPane.showMessageDialog(null, "Thêm thành công");
-			st.executeUpdate(sql);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
-		return false;
+			JOptionPane.showMessageDialog(null, "Thêm thất bại");
+		} finally {
+			con.closeConnection(conn);
+			con.closeStatement(st);
+		}
+		return status > 0 ? true : false;
 	}
 
 	@Override
-	public boolean updateFood(int idFood, String foodName, int idFoodCategory, double price) {
+	public boolean updateFood(Food food) {
 		conn = con.getConnection();
 		try {
-			st = conn.createStatement();
-			String sql = "Update food set idFood = '" + idFood  + "', foodName = '" + foodName + "', idFoodCategory = '" + idFoodCategory +  "', price = '" + price + "' where idFood = '" + idFood + "'";
-			JOptionPane.showMessageDialog(null, "Sửa thành công");
-			st.executeUpdate(sql);
+			String sql = "Update food set foodName = ?, idFoodCategory = ?, price = ?, deleteValue = ? where idFood = ?";
+			st = conn.prepareStatement(sql);
+			st.setString(1, food.getFoodName());
+			st.setInt(2, food.getIdFoodCategory());
+			st.setDouble(3, food.getPrice());
+			st.setInt(4, 1);
+			st.setInt(5, food.getIdFood());
+			if (st.executeUpdate() > 0) {
+				statusExecute = true;
+				JOptionPane.showMessageDialog(null, "Sửa thành công");
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Sửa thất bại");
 			e.printStackTrace();
 		} 
-		return false;
+		return statusExecute;
 	}
 
 	@Override
-	public boolean deleteFood(int idFood) {
+	public boolean deleteFood(Food food) {
 		conn = con.getConnection();
 		try {
-			st = conn.createStatement();
-			String sql = "Delete from food where idFood = " + idFood + "";
-			JOptionPane.showMessageDialog(null, "Xóa thành công");
-			st.executeUpdate(sql);
+			String sql = "Update food set foodName = ?, idFoodCategory = ?, price = ?, deleteValue = ? where idFood = ?";
+			st = conn.prepareStatement(sql);
+			st.setString(1, food.getFoodName());
+			st.setInt(2, food.getIdFoodCategory());
+			st.setDouble(3, food.getPrice());
+			st.setInt(4, 0);
+			st.setInt(5, food.getIdFood());
+			if (st.executeUpdate() > 0) {
+				statusExecute = true;
+				JOptionPane.showMessageDialog(null, "Xóa thành công");
+			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Xóa thất bại");
 			e.printStackTrace();
 		} 
-		return false;
+		return statusExecute;
 	}
 	
 	@Override
-	public ResultSet searchFood(String food) {
+	public List<Food> searchFood(String searchFood) {
 		conn = con.getConnection();
+		listFood = new ArrayList<Food>();
 		try {
-			String sql = "SELECT * FROM food WHERE foodName LIKE '%" + food + "%'";
-			st = conn.createStatement();
-			rs = st.executeQuery(sql);
+			String sql = "SELECT * FROM food WHERE foodName LIKE '%" + searchFood + "%'";
+			st = conn.prepareStatement(sql);
+			rs = st.executeQuery();
+			while(rs.next()) {
+				food = new Food(rs.getInt("idFood"), 
+						rs.getString("foodName"), 
+						rs.getInt("idFoodCategory"), 
+						rs.getDouble("price"),
+						rs.getInt("deleteValue"));
+				listFood.add(food);
+			}	
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		return rs;
+		return listFood;
 	}
 }

@@ -5,19 +5,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import common.database.ConnectionUntil;
-import model.dao.PersonalInfomationDao;
+
+
+import model.bean.Employees;
+import model.dao.EmployeesDao;
 
 public class PersonalInfomationView extends JFrame implements IPersonalInfomationView, ActionListener {
 	private JLabel lblUsername;
@@ -35,11 +33,6 @@ public class PersonalInfomationView extends JFrame implements IPersonalInfomatio
 	private JLabel lblIdentityCard;
 	private JTextField txtIdentityCard;
 	private JButton btnExit;
-	
-	//Sql
-	private ResultSet rs;
-	private Connection conn;
-	private Statement st;
 
 	@Override
 	public void display() {
@@ -125,26 +118,20 @@ public class PersonalInfomationView extends JFrame implements IPersonalInfomatio
 	
 	@Override
 	public void displayText() {
-		PersonalInfomationDao kn = new PersonalInfomationDao();
-		ConnectionUntil con = new ConnectionUntil();
-		try {
-			rs = kn.getAllEmployees();
-			while(rs.next()) {
-				txtUsername.setText(rs.getString("username"));
-				txtFullName.setText(rs.getString("fullName"));
-				txtAge.setText(rs.getString("age"));
-				txtAddress.setText(rs.getString("address"));
-				txtPhoneNUmber.setText(rs.getString("phoneNumber"));
-				txtHomeTown.setText(rs.getString("homeTown"));
-				txtIdentityCard.setText(rs.getString("identityCard"));
+		FormLoginView lg = new FormLoginView();	
+		EmployeesDao employeesDao = new EmployeesDao();
+		List<Employees> listEmployees = employeesDao.getAllEmployees();
+		for(Employees employees : listEmployees) {
+			if(employees.getUsername().equals(lg.username.getText())&&employees.getDeleteValue() == 1) {
+				txtUsername.setText(employees.getUsername());
+				txtFullName.setText(employees.getFullName());
+				txtAge.setText(String.valueOf(employees.getAge()));
+				txtAddress.setText(employees.getAddress());
+				txtPhoneNUmber.setText(String.valueOf(employees.getPhoneNumber()));
+				txtHomeTown.setText(employees.getHomeTown());
+				txtIdentityCard.setText(String.valueOf(employees.getIdentityCard()));
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			con.closeConnection(conn);
-			con.closeResultSet(rs);
-			con.closeStatement(st);
-		}
+		}		
 	}
 
 	@Override
